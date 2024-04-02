@@ -95,17 +95,25 @@ function CreateAccount() {
     handleSubmit,
     formState: { errors },
     setError,
-    setValue,
-  } = useForm();
+  } = useForm<IForm>();
   const onValid = async ({ username, email, password, password1 }: IForm) => {
-    setLoading(true);
     if (password !== password1) {
       setError(
         "password1",
         { message: "password are not the same" },
         { shouldFocus: true }
       );
-    } else if (loading || username === "" || email === " " || password === "")
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    if (
+      loading ||
+      username === "" ||
+      email === "" ||
+      password === "" ||
+      password === password1
+    )
       return;
     try {
       const crudentials = await createUserWithEmailAndPassword(
@@ -124,68 +132,81 @@ function CreateAccount() {
       setLoading(false);
     }
   };
+  const onClickLogin = () => {
+    navigate("/login");
+  };
   console.log(errors);
   return (
     <Wrapper>
-      <Card>
-        <Form onSubmit={handleSubmit(onValid)}>
-          <Input
-            {...register("username", { required: true, minLength: 2 })}
-            placeholder="Username"
-            type="text"
-          />
-          <Input
-            {...register("email", {
-              required: true,
-              pattern: {
-                value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i,
-                message: "이메일 형식에 맞게 입력해주세요",
-              },
-            })}
-            placeholder="Email"
-            type="email"
-          />
-          <Input
-            {...register("password", {
-              required: true,
-              minLength: {
-                value: 6,
-                message: "Your password is too short",
-              },
-            })}
-            placeholder="Password"
-            type="password"
-          />
-          <Input
-            {...register("password1", {
-              required: true,
-              minLength: {
-                value: 6,
-                message: "Your password is too short",
-              },
-            })}
-            placeholder="Password 확인  "
-            type="password"
-          />
-          <SubText>
-            {errors?.password1?.message || errors.email?.message}
-          </SubText>
-          <Btn type="submit">Register</Btn>
-        </Form>
-        <Box>
-          <Title>
-            -<br />
-            Storyville
-            <br />-
-          </Title>
-          <SubText>
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores,
-            id cum fugit doloribus assumenda optio!
-          </SubText>
-          <Link to={"/login"}>Already have an account?</Link>
-          <LoginBtn>Login</LoginBtn>
-        </Box>
-      </Card>
+      {loading ? (
+        "Loading..."
+      ) : (
+        <Card>
+          <Form onSubmit={handleSubmit(onValid)}>
+            <Input
+              {...register("username", {
+                required: "user name is required",
+                minLength: {
+                  value: 2,
+                  message: "username 2글자 이상",
+                },
+              })}
+              placeholder="Username"
+              type="text"
+            />
+            <Input
+              {...register("email", {
+                required: true,
+                pattern: {
+                  value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i,
+                  message: "Please enter a valid email address",
+                },
+              })}
+              placeholder="Email"
+              type="email"
+            />
+            <Input
+              {...register("password", {
+                required: true,
+                minLength: {
+                  value: 6,
+                  message: "Your password is too short",
+                },
+              })}
+              placeholder="Password"
+              type="password"
+            />
+            <Input
+              {...register("password1", {
+                required: true,
+                minLength: 6,
+              })}
+              placeholder="Confirm Password"
+              type="password"
+            />
+            <SubText>
+              {errors?.username?.message ||
+                errors?.password?.message ||
+                errors?.email?.message ||
+                (errors.password1 && errors.password1.message)}
+            </SubText>
+            <Btn>Register</Btn>
+          </Form>
+          <Box>
+            <Title>
+              -<br />
+              Storyville
+              <br />-
+            </Title>
+            <SubText>
+              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores,
+              id cum fugit doloribus assumenda optio!
+            </SubText>
+            <Link to={"/login"}>Already have an account?</Link>
+            <LoginBtn onClick={onClickLogin}>Login</LoginBtn>
+          </Box>
+        </Card>
+      )}
     </Wrapper>
   );
 }
